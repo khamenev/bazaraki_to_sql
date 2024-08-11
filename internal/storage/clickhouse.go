@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
 	_ "github.com/ClickHouse/clickhouse-go"
 )
@@ -50,8 +52,14 @@ func (s *ClickHouseStorage) SaveItems(items []model.Item) error {
 			negotiablePrice = 1
 		}
 
+		price, err := strconv.ParseFloat(item.Price, 64)
+		if err != nil {
+			log.Printf("Error converting price to float for item ID %d: %v", item.ID, err)
+			continue // Skip items with unparseable prices
+		}
+
 		if _, err := stmt.Exec(
-			item.ID, item.Title, item.Description, item.Price, url,
+			item.ID, item.Title, item.Description, price, url,
 			item.CreatedDT, item.OwnerAdvertCount, negotiablePrice, item.Rubric,
 			item.City, item.UserID, item.Currency, item.RaiseDT,
 		); err != nil {
@@ -65,4 +73,44 @@ func (s *ClickHouseStorage) SaveItems(items []model.Item) error {
 	}
 
 	return nil
+}
+
+// GetExistingItemIDs takes a slice of item IDs and returns those that already exist in the database.
+func (s *ClickHouseStorage) GetExistingItemIDs(itemIDs []string) ([]string, error) {
+	// Dynamically build the placeholder part of the query
+	placeholders := make([]string, len(itemIDs))
+	for i := range itemIDs {
+		placeholders[i] = "?"
+	}
+	placeholderStr := strings.Join(placeholders, ", ")
+
+	query := fmt.Sprintf("SELECT id FROM items WHERE id IN (%s)", placeholderStr)
+
+	// Convert itemIDs from []string to []interface{} for the query
+	args := make([]interface{}, len(itemIDs))
+	for i, id := range itemIDs {
+		args[i] = id
+	}
+
+	// Execute the query
+	rows, err := s.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("query execution error: %w", err)
+	}
+	defer rows.Close()
+
+	var existingIDs []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		existingIDs = append(existingIDs, id)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating through rows: %w", err)
+	}
+
+	return existingIDs, nil
 }

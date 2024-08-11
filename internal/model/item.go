@@ -22,5 +22,5 @@ type Item struct {
 
 // GenerateURL constructs the URL based on the item's ID and Slug
 func (i *Item) GenerateURL() string {
-	return fmt.Sprintf("https://www.bazaraki.com/adv/%d_%s", i.ID, i.Slug)
+	return fmt.Sprintf("https://www.bazaraki.com/adv/%d_%s/", i.ID, i.Slug)
 }

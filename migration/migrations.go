@@ -25,7 +25,7 @@ func Migrate(dsn string) error {
 			id Int64,
 			title String,
 			description String,
-			price String
+			price Float64
 		) ENGINE = MergeTree() ORDER BY id
 	`)
 	if err != nil {
