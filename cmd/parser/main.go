@@ -21,8 +21,11 @@ func main() {
 	}
 
 	var urls = []string{
-		"https://www.bazaraki.com/api/items/?rubric=681&city=12",  //houses
-		"https://www.bazaraki.com/api/items/?rubric=3529&city=12", //app
+		//"https://www.bazaraki.com/api/items/?rubric=681&city=12",  //houses rent
+		//"https://www.bazaraki.com/api/items/?rubric=3529&city=12", //app rent
+		"https://www.bazaraki.com/api/items/?rubric=3528", //app sell
+		"https://www.bazaraki.com/api/items/?rubric=678",  //houses sell
+		"https://www.bazaraki.com/api/items/?rubric=141",  //land
 	}
 
 	for _, url := range urls {

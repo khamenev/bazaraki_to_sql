@@ -42,6 +42,7 @@ func FetchPage(url string, page int) ([]model.Item, string, error) {
 		defer resp.Body.Close()
 		if resp.StatusCode == http.StatusOK {
 			var apiResponse ApiResponse
+			time.Sleep(500 * time.Millisecond)
 			body, _ := ioutil.ReadAll(resp.Body)
 			json.Unmarshal(body, &apiResponse)
 			var pages = apiResponse.Count / 10
